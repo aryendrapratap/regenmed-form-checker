@@ -1,0 +1,6 @@
+streamlit
+google-genai>=2.25
+pydantic
+pymupdf
+pillow
+requests

@@ -1,0 +1,14 @@
+# Private: never upload the key
+.streamlit/secrets.toml
+
+# RegenMed's sample forms and our test copies stay off GitHub (share them in Discord or Drive)
+samples/
+*.pdf
+*.PDF
+*_reading.json
+
+# Python clutter
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
