@@ -12,3 +12,6 @@ samples/
 __pycache__/
 *.pyc
 .DS_Store
+# React
+node_modules/
+web/.env*

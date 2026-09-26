@@ -10,6 +10,10 @@ Online (e.g. Render):
     Start command:  uvicorn api:app --host 0.0.0.0 --port $PORT
     Environment variables: GEMINI_API_KEY, HACKATHON_API_KEY (and any optional settings from secrets.toml.example)
 
+The React website: put the React project in a folder called "web" in this repo and run
+"npm run build" inside it. This server then shows the built site (web/dist or web/build) at "/",
+so the whole app is one link.
+
 Endpoints:
     GET  /api/health          -> {"ok": true}
     POST /api/check           -> send one PDF (form field "file"); returns the result (see below)
@@ -23,9 +27,11 @@ import hashlib
 import io
 import os
 import time
+from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 import ai
@@ -129,3 +135,25 @@ class NoteRequest(BaseModel):
 def note(request: NoteRequest):
     """A short correction note for staff, written by AI (organizers' key first, then Google)."""
     return {"note": ai.correction_note(request.form_type, request.problems)}
+
+
+# ---------------------------------------------------------------------------
+# The React website (must stay at the end, after the /api routes)
+# ---------------------------------------------------------------------------
+_HERE = Path(__file__).resolve().parent
+WEB = next((folder for folder in (_HERE / "web" / "dist", _HERE / "web" / "build")
+            if (folder / "index.html").exists()), None)
+
+if WEB is not None:
+    @app.get("/{path:path}", include_in_schema=False)
+    def website(path: str):
+        """Any file of the built React site; every other address shows the React page."""
+        target = (WEB / path).resolve()
+        if path and target.is_file() and WEB in target.parents:
+            return FileResponse(target)
+        return FileResponse(WEB / "index.html")
+else:
+    @app.get("/", include_in_schema=False)
+    def home():
+        return {"message": "RegenMed Form Checker API is running. Try /docs. "
+                           "(Put the built React site in web/dist to show it here.)"}
